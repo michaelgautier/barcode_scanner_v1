@@ -107,9 +107,13 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_gautier_scanner_OBJECTS = src/gautier_scanner-app.$(OBJEXT) \
+am_gautier_scanner_OBJECTS =  \
+	src/gautier_scanner-barcode_record.$(OBJEXT) \
+	src/gautier_scanner-scan_config_record.$(OBJEXT) \
+	src/gautier_scanner-scan_config_window.$(OBJEXT) \
 	src/gautier_scanner-main_window.$(OBJEXT) \
-	src/gautier_scanner-barcode_record.$(OBJEXT)
+	src/gautier_scanner-application.$(OBJEXT) \
+	src/gautier_scanner-app.$(OBJEXT)
 gautier_scanner_OBJECTS = $(am_gautier_scanner_OBJECTS)
 am__DEPENDENCIES_1 =
 gautier_scanner_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -137,8 +141,11 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = src/$(DEPDIR)/gautier_scanner-app.Po \
+	src/$(DEPDIR)/gautier_scanner-application.Po \
 	src/$(DEPDIR)/gautier_scanner-barcode_record.Po \
-	src/$(DEPDIR)/gautier_scanner-main_window.Po
+	src/$(DEPDIR)/gautier_scanner-main_window.Po \
+	src/$(DEPDIR)/gautier_scanner-scan_config_record.Po \
+	src/$(DEPDIR)/gautier_scanner-scan_config_window.Po
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -338,11 +345,14 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-gautier_scanner_CXXFLAGS = $(GTKMM_CFLAGS)
-gautier_scanner_LDADD = $(GTKMM_LIBS)
-gautier_scanner_SOURCES = src/app.cpp \
+gautier_scanner_CXXFLAGS = $(GTKMM_CFLAGS) 
+gautier_scanner_LDADD = $(GTKMM_LIBS) 
+gautier_scanner_SOURCES = src/barcode_record.cpp \
+src/scan_config_record.cpp \
+src/scan_config_window.cpp \
 src/main_window.cpp \
-src/barcode_record.cpp 
+src/application.cpp \
+src/app.cpp 
 
 gautier_scanner_CPPFLAGS = -I$(top_srcdir)/src
 all: config.h
@@ -469,11 +479,17 @@ src/$(am__dirstamp):
 src/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/$(DEPDIR)
 	@: > src/$(DEPDIR)/$(am__dirstamp)
-src/gautier_scanner-app.$(OBJEXT): src/$(am__dirstamp) \
+src/gautier_scanner-barcode_record.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/gautier_scanner-scan_config_record.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/gautier_scanner-scan_config_window.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/gautier_scanner-main_window.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/gautier_scanner-barcode_record.$(OBJEXT): src/$(am__dirstamp) \
+src/gautier_scanner-application.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/gautier_scanner-app.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 
 gautier_scanner$(EXEEXT): $(gautier_scanner_OBJECTS) $(gautier_scanner_DEPENDENCIES) $(EXTRA_gautier_scanner_DEPENDENCIES) 
@@ -488,8 +504,11 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/gautier_scanner-app.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/gautier_scanner-application.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/gautier_scanner-barcode_record.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/gautier_scanner-main_window.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/gautier_scanner-scan_config_record.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/gautier_scanner-scan_config_window.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -521,19 +540,47 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
-src/gautier_scanner-app.o: src/app.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-app.o -MD -MP -MF src/$(DEPDIR)/gautier_scanner-app.Tpo -c -o src/gautier_scanner-app.o `test -f 'src/app.cpp' || echo '$(srcdir)/'`src/app.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-app.Tpo src/$(DEPDIR)/gautier_scanner-app.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/app.cpp' object='src/gautier_scanner-app.o' libtool=no @AMDEPBACKSLASH@
+src/gautier_scanner-barcode_record.o: src/barcode_record.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-barcode_record.o -MD -MP -MF src/$(DEPDIR)/gautier_scanner-barcode_record.Tpo -c -o src/gautier_scanner-barcode_record.o `test -f 'src/barcode_record.cpp' || echo '$(srcdir)/'`src/barcode_record.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-barcode_record.Tpo src/$(DEPDIR)/gautier_scanner-barcode_record.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/barcode_record.cpp' object='src/gautier_scanner-barcode_record.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-app.o `test -f 'src/app.cpp' || echo '$(srcdir)/'`src/app.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-barcode_record.o `test -f 'src/barcode_record.cpp' || echo '$(srcdir)/'`src/barcode_record.cpp
 
-src/gautier_scanner-app.obj: src/app.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-app.obj -MD -MP -MF src/$(DEPDIR)/gautier_scanner-app.Tpo -c -o src/gautier_scanner-app.obj `if test -f 'src/app.cpp'; then $(CYGPATH_W) 'src/app.cpp'; else $(CYGPATH_W) '$(srcdir)/src/app.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-app.Tpo src/$(DEPDIR)/gautier_scanner-app.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/app.cpp' object='src/gautier_scanner-app.obj' libtool=no @AMDEPBACKSLASH@
+src/gautier_scanner-barcode_record.obj: src/barcode_record.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-barcode_record.obj -MD -MP -MF src/$(DEPDIR)/gautier_scanner-barcode_record.Tpo -c -o src/gautier_scanner-barcode_record.obj `if test -f 'src/barcode_record.cpp'; then $(CYGPATH_W) 'src/barcode_record.cpp'; else $(CYGPATH_W) '$(srcdir)/src/barcode_record.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-barcode_record.Tpo src/$(DEPDIR)/gautier_scanner-barcode_record.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/barcode_record.cpp' object='src/gautier_scanner-barcode_record.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-app.obj `if test -f 'src/app.cpp'; then $(CYGPATH_W) 'src/app.cpp'; else $(CYGPATH_W) '$(srcdir)/src/app.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-barcode_record.obj `if test -f 'src/barcode_record.cpp'; then $(CYGPATH_W) 'src/barcode_record.cpp'; else $(CYGPATH_W) '$(srcdir)/src/barcode_record.cpp'; fi`
+
+src/gautier_scanner-scan_config_record.o: src/scan_config_record.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-scan_config_record.o -MD -MP -MF src/$(DEPDIR)/gautier_scanner-scan_config_record.Tpo -c -o src/gautier_scanner-scan_config_record.o `test -f 'src/scan_config_record.cpp' || echo '$(srcdir)/'`src/scan_config_record.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-scan_config_record.Tpo src/$(DEPDIR)/gautier_scanner-scan_config_record.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/scan_config_record.cpp' object='src/gautier_scanner-scan_config_record.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-scan_config_record.o `test -f 'src/scan_config_record.cpp' || echo '$(srcdir)/'`src/scan_config_record.cpp
+
+src/gautier_scanner-scan_config_record.obj: src/scan_config_record.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-scan_config_record.obj -MD -MP -MF src/$(DEPDIR)/gautier_scanner-scan_config_record.Tpo -c -o src/gautier_scanner-scan_config_record.obj `if test -f 'src/scan_config_record.cpp'; then $(CYGPATH_W) 'src/scan_config_record.cpp'; else $(CYGPATH_W) '$(srcdir)/src/scan_config_record.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-scan_config_record.Tpo src/$(DEPDIR)/gautier_scanner-scan_config_record.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/scan_config_record.cpp' object='src/gautier_scanner-scan_config_record.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-scan_config_record.obj `if test -f 'src/scan_config_record.cpp'; then $(CYGPATH_W) 'src/scan_config_record.cpp'; else $(CYGPATH_W) '$(srcdir)/src/scan_config_record.cpp'; fi`
+
+src/gautier_scanner-scan_config_window.o: src/scan_config_window.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-scan_config_window.o -MD -MP -MF src/$(DEPDIR)/gautier_scanner-scan_config_window.Tpo -c -o src/gautier_scanner-scan_config_window.o `test -f 'src/scan_config_window.cpp' || echo '$(srcdir)/'`src/scan_config_window.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-scan_config_window.Tpo src/$(DEPDIR)/gautier_scanner-scan_config_window.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/scan_config_window.cpp' object='src/gautier_scanner-scan_config_window.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-scan_config_window.o `test -f 'src/scan_config_window.cpp' || echo '$(srcdir)/'`src/scan_config_window.cpp
+
+src/gautier_scanner-scan_config_window.obj: src/scan_config_window.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-scan_config_window.obj -MD -MP -MF src/$(DEPDIR)/gautier_scanner-scan_config_window.Tpo -c -o src/gautier_scanner-scan_config_window.obj `if test -f 'src/scan_config_window.cpp'; then $(CYGPATH_W) 'src/scan_config_window.cpp'; else $(CYGPATH_W) '$(srcdir)/src/scan_config_window.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-scan_config_window.Tpo src/$(DEPDIR)/gautier_scanner-scan_config_window.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/scan_config_window.cpp' object='src/gautier_scanner-scan_config_window.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-scan_config_window.obj `if test -f 'src/scan_config_window.cpp'; then $(CYGPATH_W) 'src/scan_config_window.cpp'; else $(CYGPATH_W) '$(srcdir)/src/scan_config_window.cpp'; fi`
 
 src/gautier_scanner-main_window.o: src/main_window.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-main_window.o -MD -MP -MF src/$(DEPDIR)/gautier_scanner-main_window.Tpo -c -o src/gautier_scanner-main_window.o `test -f 'src/main_window.cpp' || echo '$(srcdir)/'`src/main_window.cpp
@@ -549,19 +596,33 @@ src/gautier_scanner-main_window.obj: src/main_window.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-main_window.obj `if test -f 'src/main_window.cpp'; then $(CYGPATH_W) 'src/main_window.cpp'; else $(CYGPATH_W) '$(srcdir)/src/main_window.cpp'; fi`
 
-src/gautier_scanner-barcode_record.o: src/barcode_record.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-barcode_record.o -MD -MP -MF src/$(DEPDIR)/gautier_scanner-barcode_record.Tpo -c -o src/gautier_scanner-barcode_record.o `test -f 'src/barcode_record.cpp' || echo '$(srcdir)/'`src/barcode_record.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-barcode_record.Tpo src/$(DEPDIR)/gautier_scanner-barcode_record.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/barcode_record.cpp' object='src/gautier_scanner-barcode_record.o' libtool=no @AMDEPBACKSLASH@
+src/gautier_scanner-application.o: src/application.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-application.o -MD -MP -MF src/$(DEPDIR)/gautier_scanner-application.Tpo -c -o src/gautier_scanner-application.o `test -f 'src/application.cpp' || echo '$(srcdir)/'`src/application.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-application.Tpo src/$(DEPDIR)/gautier_scanner-application.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/application.cpp' object='src/gautier_scanner-application.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-barcode_record.o `test -f 'src/barcode_record.cpp' || echo '$(srcdir)/'`src/barcode_record.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-application.o `test -f 'src/application.cpp' || echo '$(srcdir)/'`src/application.cpp
 
-src/gautier_scanner-barcode_record.obj: src/barcode_record.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-barcode_record.obj -MD -MP -MF src/$(DEPDIR)/gautier_scanner-barcode_record.Tpo -c -o src/gautier_scanner-barcode_record.obj `if test -f 'src/barcode_record.cpp'; then $(CYGPATH_W) 'src/barcode_record.cpp'; else $(CYGPATH_W) '$(srcdir)/src/barcode_record.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-barcode_record.Tpo src/$(DEPDIR)/gautier_scanner-barcode_record.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/barcode_record.cpp' object='src/gautier_scanner-barcode_record.obj' libtool=no @AMDEPBACKSLASH@
+src/gautier_scanner-application.obj: src/application.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-application.obj -MD -MP -MF src/$(DEPDIR)/gautier_scanner-application.Tpo -c -o src/gautier_scanner-application.obj `if test -f 'src/application.cpp'; then $(CYGPATH_W) 'src/application.cpp'; else $(CYGPATH_W) '$(srcdir)/src/application.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-application.Tpo src/$(DEPDIR)/gautier_scanner-application.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/application.cpp' object='src/gautier_scanner-application.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-barcode_record.obj `if test -f 'src/barcode_record.cpp'; then $(CYGPATH_W) 'src/barcode_record.cpp'; else $(CYGPATH_W) '$(srcdir)/src/barcode_record.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-application.obj `if test -f 'src/application.cpp'; then $(CYGPATH_W) 'src/application.cpp'; else $(CYGPATH_W) '$(srcdir)/src/application.cpp'; fi`
+
+src/gautier_scanner-app.o: src/app.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-app.o -MD -MP -MF src/$(DEPDIR)/gautier_scanner-app.Tpo -c -o src/gautier_scanner-app.o `test -f 'src/app.cpp' || echo '$(srcdir)/'`src/app.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-app.Tpo src/$(DEPDIR)/gautier_scanner-app.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/app.cpp' object='src/gautier_scanner-app.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-app.o `test -f 'src/app.cpp' || echo '$(srcdir)/'`src/app.cpp
+
+src/gautier_scanner-app.obj: src/app.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -MT src/gautier_scanner-app.obj -MD -MP -MF src/$(DEPDIR)/gautier_scanner-app.Tpo -c -o src/gautier_scanner-app.obj `if test -f 'src/app.cpp'; then $(CYGPATH_W) 'src/app.cpp'; else $(CYGPATH_W) '$(srcdir)/src/app.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/gautier_scanner-app.Tpo src/$(DEPDIR)/gautier_scanner-app.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/app.cpp' object='src/gautier_scanner-app.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gautier_scanner_CPPFLAGS) $(CPPFLAGS) $(gautier_scanner_CXXFLAGS) $(CXXFLAGS) -c -o src/gautier_scanner-app.obj `if test -f 'src/app.cpp'; then $(CYGPATH_W) 'src/app.cpp'; else $(CYGPATH_W) '$(srcdir)/src/app.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -854,8 +915,11 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f src/$(DEPDIR)/gautier_scanner-app.Po
+	-rm -f src/$(DEPDIR)/gautier_scanner-application.Po
 	-rm -f src/$(DEPDIR)/gautier_scanner-barcode_record.Po
 	-rm -f src/$(DEPDIR)/gautier_scanner-main_window.Po
+	-rm -f src/$(DEPDIR)/gautier_scanner-scan_config_record.Po
+	-rm -f src/$(DEPDIR)/gautier_scanner-scan_config_window.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -904,8 +968,11 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f src/$(DEPDIR)/gautier_scanner-app.Po
+	-rm -f src/$(DEPDIR)/gautier_scanner-application.Po
 	-rm -f src/$(DEPDIR)/gautier_scanner-barcode_record.Po
 	-rm -f src/$(DEPDIR)/gautier_scanner-main_window.Po
+	-rm -f src/$(DEPDIR)/gautier_scanner-scan_config_record.Po
+	-rm -f src/$(DEPDIR)/gautier_scanner-scan_config_window.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -948,9 +1015,12 @@ uninstall-am: uninstall-binPROGRAMS
 .PRECIOUS: Makefile
 
 
-src/app.cpp: Makefile
-src/main_window.cpp: Makefile
-src/barcode_record.cpp: Makefile
+src/barcode_record.cpp: Makefile 
+src/scan_config_record.cpp: Makefile 
+src/scan_config_window.cpp: Makefile 
+src/main_window.cpp: Makefile 
+src/application.cpp: Makefile 
+src/app.cpp: Makefile 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
