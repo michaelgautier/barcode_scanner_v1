@@ -1,6 +1,7 @@
 #ifndef inc_gautier_barcode_record
 #define inc_gautier_barcode_record
 
+#include "config.h"
 #include <gtkmm.h>
 #include <glibmm.h>
 

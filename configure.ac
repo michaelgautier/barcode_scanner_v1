@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([gautier_scanner], [0.0.1], [mklinfinity@proton.me])
+AC_INIT([gautier_scanner], [0.0.2], [mklinfinity@proton.me])
 AM_INIT_AUTOMAKE([gnits] [subdir-objects] [-Wall -Werror])
 AM_PROG_AR
 LT_PREREQ([2.4])

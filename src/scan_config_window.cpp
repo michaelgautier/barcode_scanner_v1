@@ -85,14 +85,59 @@ scan_config_window::scan_config_window()
     return;
 }
 
-void scan_config_window::set_config ( const scan_config_record& config )
+void scan_config_window::set_config ( scan_config_record config )
 {
     configuration = config;
+
+    bool scan_config_unique_barcodes = configuration.get_scan_config_unique_barcodes();
+    guint scan_config_items_per_container = configuration.get_scan_config_items_per_container();
+    guint scan_config_barcode_length_min = configuration.get_scan_config_barcode_length_min();
+    guint scan_config_barcode_length_max = configuration.get_scan_config_barcode_length_max();
+    Glib::ustring scan_config_container_prefix = configuration.get_scan_config_container_prefix();
+    Glib::ustring scan_config_container_suffix = configuration.get_scan_config_container_suffix();
+    bool scan_config_container_autoincrement = configuration.get_scan_config_container_autoincrement();
+    bool scan_config_container_autoprint = configuration.get_scan_config_container_autoprint();
+    scan_config_export_type scan_config_export_format_type = configuration.get_scan_config_export_format_type();
+
+    sameness_freeform.set_active ( scan_config_unique_barcodes == false );
+    sameness_unique.set_active ( scan_config_unique_barcodes );
+    items_per_container.set_text ( Glib::ustring::format ( scan_config_items_per_container ) );
+    items_code_length_min.set_text ( Glib::ustring::format ( scan_config_barcode_length_min ) );
+    items_code_length_max.set_text ( Glib::ustring::format ( scan_config_barcode_length_max ) );
+    container_prefix.set_text ( scan_config_container_prefix );
+    container_suffix.set_text ( scan_config_container_suffix );
+    autoincrement_enabled.set_active ( scan_config_container_autoincrement );
+    autoprint_enabled.set_active ( scan_config_container_autoprint );
+    tab_delimited_format.set_active ( scan_config_export_format_type == scan_config_export_type::tab_delimited );
+    xml_format.set_active ( scan_config_export_format_type == scan_config_export_type::xml );
+    edi856_format.set_active ( scan_config_export_format_type == scan_config_export_type::edi_856 );
 
     return;
 }
 
 scan_config_record scan_config_window::get_config()
 {
+    configuration.set_scan_config_unique_barcodes ( sameness_unique.get_active() );
+    configuration.set_scan_config_items_per_container ( std::stoul ( items_per_container.get_text() ) );
+    configuration.set_scan_config_barcode_length_min ( std::stoul ( items_code_length_min.get_text() ) );
+    configuration.set_scan_config_barcode_length_max ( std::stoul ( items_code_length_max.get_text() ) );
+    configuration.set_scan_config_container_prefix ( container_prefix.get_text() );
+    configuration.set_scan_config_container_suffix ( container_suffix.get_text() );
+    configuration.set_scan_config_container_autoincrement ( autoincrement_enabled.get_active() );
+    configuration.set_scan_config_container_autoprint ( autoprint_enabled.get_active() );
+
+    if ( tab_delimited_format.get_active() )
+    {
+        configuration.set_scan_config_export_format_type ( scan_config_export_type::tab_delimited );
+    }
+    else if ( xml_format.get_active() )
+    {
+        configuration.set_scan_config_export_format_type ( scan_config_export_type::xml );
+    }
+    else if ( edi856_format.get_active() )
+    {
+        configuration.set_scan_config_export_format_type ( scan_config_export_type::edi_856 );
+    }
+
     return configuration;
 }

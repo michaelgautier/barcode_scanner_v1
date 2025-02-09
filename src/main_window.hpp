@@ -1,6 +1,7 @@
 #ifndef inc_gautier_ui_main_window
 #define inc_gautier_ui_main_window
 
+#include "config.h"
 #include <gtkmm.h>
 #include <glibmm.h>
 
@@ -24,6 +25,8 @@ class main_window : public Gtk::ApplicationWindow {
 
         void on_export();
         void on_configure();
+        void on_reset_clicked();
+        void on_erase_all_clicked();
 
         //Contains all visuals
         Gtk::Box main_frame;

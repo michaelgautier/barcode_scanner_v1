@@ -1,6 +1,7 @@
 #ifndef inc_gautier_ui_scan_config_window
 #define inc_gautier_ui_scan_config_window
 
+#include "config.h"
 #include <gtkmm.h>
 #include <glibmm.h>
 
@@ -10,7 +11,7 @@ class scan_config_window : public Gtk::Window {
     public:
         scan_config_window();
         scan_config_record get_config();
-        void set_config ( const scan_config_record& config );
+        void set_config ( scan_config_record config );
     private:
         scan_config_record configuration;
 

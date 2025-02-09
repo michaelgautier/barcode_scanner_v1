@@ -1,7 +1,5 @@
 #include "main_window.hpp"
 
-#include <iostream>
-
 main_window::main_window()
 {
     set_title ( "Gautier Scanner v01" );
@@ -95,6 +93,12 @@ main_window::main_window()
 
     /*Barcode text entry ENTER key trigger*/
     barcode_field.signal_activate().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_barcode_activate ) ) );
+
+    /*Reset button signal*/
+    scan_reset_button.signal_clicked().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_reset_clicked ) ) );
+
+    /*Erase all button signal*/
+    scan_erase_all_button.signal_clicked().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_erase_all_clicked ) ) );
 
     set_focus ( barcode_field );
 
@@ -198,7 +202,10 @@ void main_window::on_barcode_activate()
 
 void main_window::on_export()
 {
-    std::cout << "Export\n";
+    Glib::RefPtr<Gtk::FileChooserNative> FileSaveOperationDialog = Gtk::FileChooserNative::create  (   "File Export", *this, Gtk::FileChooser::Action::SELECT_FOLDER, "Select", "Cancel" );
+    FileSaveOperationDialog->set_modal ( true );
+    FileSaveOperationDialog->set_transient_for ( *this );
+    FileSaveOperationDialog->show();
 
     return;
 }
@@ -206,6 +213,7 @@ void main_window::on_export()
 void main_window::on_configure()
 {
     scan_config_win = new scan_config_window;
+    scan_config_win->set_hide_on_close ( true );
     scan_config_win->signal_hide().connect ( sigc::mem_fun ( *this, &main_window::scan_config_on_close ) );
     scan_config_win->set_transient_for ( *this );
     scan_config_win->set_modal ( true );
@@ -218,19 +226,6 @@ void main_window::on_configure()
 
 void main_window::scan_config_on_close()
 {
-    /*
-        Return values
-            bool    scan_config_unique_barcodes = true;
-            guint   scan_config_items_per_container = 10;
-            guint   scan_config_barcode_length_min = 5;
-            guint   scan_config_barcode_length_max = 15;
-            ustring scan_config_container_prefix = "CONTAINER";
-            ustring scan_config_container_suffix = "OUTBOUND";
-            bool    scan_config_container_autoincrement = true;
-            bool    scan_config_container_autoprint = false;
-            guint   scan_config_export_format_typeid = 0;
-    */
-
     scan_config_data = scan_config_win->get_config();
 
     delete scan_config_win;
@@ -238,3 +233,18 @@ void main_window::scan_config_on_close()
     return;
 }
 
+void main_window::on_reset_clicked()
+{
+    barcode_field.set_text ( "" );
+    set_focus ( barcode_field );
+
+    return;
+}
+
+void main_window::on_erase_all_clicked()
+{
+    on_reset_clicked();
+    barcode_list->remove_all();
+
+    return;
+}

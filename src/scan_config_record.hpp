@@ -1,8 +1,10 @@
 #ifndef inc_gautier_scan_config_record
 #define inc_gautier_scan_config_record
 
+#include "config.h"
 #include <gtkmm.h>
 #include <glibmm.h>
+#include "scan_config_export_type.hpp"
 
 class scan_config_record {
     public:
@@ -16,17 +18,17 @@ class scan_config_record {
         Glib::ustring get_scan_config_container_suffix();
         bool get_scan_config_container_autoincrement();
         bool get_scan_config_container_autoprint();
-        guint get_scan_config_export_format_typeid();
+        scan_config_export_type get_scan_config_export_format_type();
 
-        void get_scan_config_unique_barcodes ( bool value );
-        void get_scan_config_items_per_container ( guint value );
-        void get_scan_config_barcode_length_min ( guint value );
-        void get_scan_config_barcode_length_max ( guint value );
-        void get_scan_config_container_prefix ( Glib::ustring value );
-        void get_scan_config_container_suffix ( Glib::ustring value );
-        void get_scan_config_container_autoincrement ( bool value );
-        void get_scan_config_container_autoprint ( bool value );
-        void get_scan_config_export_format_typeid ( guint value );
+        void set_scan_config_unique_barcodes ( bool value );
+        void set_scan_config_items_per_container ( guint value );
+        void set_scan_config_barcode_length_min ( guint value );
+        void set_scan_config_barcode_length_max ( guint value );
+        void set_scan_config_container_prefix ( Glib::ustring value );
+        void set_scan_config_container_suffix ( Glib::ustring value );
+        void set_scan_config_container_autoincrement ( bool value );
+        void set_scan_config_container_autoprint ( bool value );
+        void set_scan_config_export_format_type ( scan_config_export_type value );
 
     private:
         bool scan_config_unique_barcodes = true;
@@ -37,6 +39,6 @@ class scan_config_record {
         Glib::ustring scan_config_container_suffix = "OUTBOUND";
         bool scan_config_container_autoincrement = true;
         bool scan_config_container_autoprint = false;
-        guint scan_config_export_format_typeid = 0;
+        scan_config_export_type scan_config_export_format_type = scan_config_export_type::tab_delimited;
 };
 #endif
