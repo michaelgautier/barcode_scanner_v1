@@ -1,4 +1,5 @@
 #include "main_window.hpp"
+#include <iostream>
 
 main_window::main_window()
 {
@@ -139,9 +140,12 @@ void main_window::on_barcode_activate()
 
     if ( barcode_buffer )
     {
-        guint text_length = barcode_buffer->get_length();
+        const guint text_length = barcode_buffer->get_length();
 
-        if ( text_length > 5 )
+        const guint barcode_length_min = scan_config_data.get_scan_config_barcode_length_min();
+        const guint barcode_length_max = scan_config_data.get_scan_config_barcode_length_max();
+
+        if ( text_length >= barcode_length_min && text_length <= barcode_length_max )
         {
             barcode_row = barcode_record::create ( barcode_buffer->get_text() );
 
@@ -151,15 +155,20 @@ void main_window::on_barcode_activate()
 
             guint barcode_count = barcode_list->get_n_items();
 
+            const bool unique_scan_required = scan_config_data.get_scan_config_unique_barcodes();
+
             for ( guint i = 0; i < barcode_count; i++ )
             {
                 Glib::RefPtr<barcode_record> row = barcode_list->get_item ( i );
 
-                found = row->value == barcode_row->value;
-
-                if ( found )
+                if ( unique_scan_required )
                 {
-                    break;
+                    found = row->value == barcode_row->value;
+
+                    if ( found )
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -178,7 +187,17 @@ void main_window::on_barcode_activate()
             {
                 container_count++;
 
-                Gtk::Label* Description = Gtk::make_managed<Gtk::Label> ( Glib::ustring::format ( "Container - ", container_count ) );
+                Glib::ustring LabelPrefix;
+                Glib::ustring LabelMidValue;
+                Glib::ustring LabelSuffix;
+                Glib::ustring AutoIncrementText;
+
+                if ( scan_config_data.get_scan_config_container_autoincrement() )
+                {
+                    AutoIncrementText = Glib::ustring::format ( container_count );
+                }
+
+                Gtk::Label* Description = Gtk::make_managed<Gtk::Label> ( Glib::ustring::format ( LabelPrefix, LabelMidValue, AutoIncrementText, LabelSuffix ) );
                 scanned_barcodes.append ( *Description );
 
                 for ( guint i = 0; i < barcode_count; i++ )
@@ -191,6 +210,11 @@ void main_window::on_barcode_activate()
                 }
 
                 barcode_list->remove_all();
+
+                if ( scan_config_data.get_scan_config_container_autoprint() )
+                {
+                    std::cout << "Label Print\n";
+                }
             }
         }
 
@@ -202,10 +226,34 @@ void main_window::on_barcode_activate()
 
 void main_window::on_export()
 {
-    Glib::RefPtr<Gtk::FileChooserNative> FileSaveOperationDialog = Gtk::FileChooserNative::create  (   "File Export", *this, Gtk::FileChooser::Action::SELECT_FOLDER, "Select", "Cancel" );
+    FileSaveOperationDialog = Gtk::FileChooserNative::create ( "File Export", Gtk::FileChooser::Action::SELECT_FOLDER );
+    FileSaveOperationDialog->set_current_folder ( Gio::File::create_for_path ( Glib::get_home_dir () ) );
+    FileSaveOperationDialog->signal_response().connect ( sigc::mem_fun ( *this, &main_window::file_save_response ) );
+    FileSaveOperationDialog->set_create_folders ( true );
     FileSaveOperationDialog->set_modal ( true );
     FileSaveOperationDialog->set_transient_for ( *this );
     FileSaveOperationDialog->show();
+
+    return;
+}
+
+void main_window::file_save_response ( int response_id )
+{
+    if ( response_id == Gtk::ResponseType::ACCEPT )
+    {
+        Glib::RefPtr<Gio::File> folder_path = FileSaveOperationDialog->get_current_folder();
+        std::cout << "folder path " << folder_path->get_path() << "\n";
+    }
+    else if ( response_id == Gtk::ResponseType::CANCEL )
+    {
+        std::cout << "CANCEL\n";
+    }
+    else if ( response_id == Gtk::ResponseType::DELETE_EVENT )
+    {
+        std::cout << "DELETE_EVENT\n";
+    }
+
+    FileSaveOperationDialog = nullptr;
 
     return;
 }

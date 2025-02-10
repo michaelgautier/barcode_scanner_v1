@@ -65,5 +65,7 @@ class main_window : public Gtk::ApplicationWindow {
         void scan_config_on_close();
 
         scan_config_record scan_config_data;
+        Glib::RefPtr<Gtk::FileChooserNative> FileSaveOperationDialog;
+        void file_save_response ( int response_id );
 };
 #endif
