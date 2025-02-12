@@ -79,5 +79,6 @@ class main_window : public Gtk::ApplicationWindow {
         void write_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
         void write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
         void write_text_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
+        void close_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out );
 };
 #endif

@@ -422,6 +422,18 @@ void main_window::file_save_response ( int response_id )
         std::string row_label_text;
         std::string container_name;
 
+        const scan_config_export_type export_type = scan_config_data.get_scan_config_export_format_type();
+
+        if ( export_type == scan_config_export_type::xml )
+        {
+            file_lines_ref->put_string ( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
+            file_lines_ref->put_string ( "<document>\n" );
+        }
+        else
+        {
+            file_lines_ref->put_string ( "\n" );
+        }
+
         while ( container_row )
         {
             Gtk::Label* row_label = dynamic_cast<Gtk::Label*> ( container_row->get_child() );
@@ -432,33 +444,54 @@ void main_window::file_save_response ( int response_id )
 
                 bool has_prefix = Glib::str_has_prefix ( row_label_text, scan_config_data.get_scan_config_container_prefix() );
                 bool has_suffix = Glib::str_has_prefix ( row_label_text, scan_config_data.get_scan_config_container_suffix() );
+                bool close_line = false;
 
                 if ( has_prefix || has_suffix )
                 {
                     if ( container_name.empty() == false )
                     {
-                        file_lines_ref->put_string ( "\n" );
+                        close_line = true;
                     }
 
                     container_name = row_label_text;
                     row_label_text.clear();
                 }
 
-                switch ( scan_config_data.get_scan_config_export_format_type() )
+                switch ( export_type )
                 {
                     case scan_config_export_type::tab_delimited:
+                        if ( close_line )
+                        {
+                            file_lines_ref->put_string ( "\n" );
+                        }
+
                         write_tab_delimited_line ( file_lines_ref, container_name, row_label_text );
                         break;
 
                     case scan_config_export_type::xml:
+                        if ( close_line )
+                        {
+                            close_xml_line ( file_lines_ref );
+                        }
+
                         write_xml_line ( file_lines_ref, container_name, row_label_text );
                         break;
 
                     case scan_config_export_type::edi_856:
+                        if ( close_line )
+                        {
+                            file_lines_ref->put_string ( "\n" );
+                        }
+
                         write_edi_856_line ( file_lines_ref, container_name, row_label_text );
                         break;
 
                     default:
+                        if ( close_line )
+                        {
+                            file_lines_ref->put_string ( "\n" );
+                        }
+
                         write_text_line ( file_lines_ref, container_name, row_label_text );
                         break;
                 }
@@ -467,6 +500,17 @@ void main_window::file_save_response ( int response_id )
             }
 
             container_row = scanned_barcodes.get_row_at_index ( row_num++ );
+        }
+
+        if ( container_name.empty() == false && export_type == scan_config_export_type::xml )
+        {
+            file_lines_ref->put_string ( "\n\t\t</line>\n" );
+            file_lines_ref->put_string ( "\t</group>\n" );
+            file_lines_ref->put_string ( "</document>" );
+        }
+        else
+        {
+            file_lines_ref->put_string ( "\n" );
         }
 
         file_io_ref->flush();
@@ -507,7 +551,27 @@ void main_window::write_tab_delimited_line ( Glib::RefPtr<Gio::DataOutputStream>
 
 void main_window::write_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value )
 {
-    out->put_string ( value + "\n" );
+    if ( value.empty() && container_name.empty() == false )
+    {
+        out->put_string ( "\t<group name=\"" );
+        out->put_string ( container_name );
+        out->put_string ( "\">\n" );
+        out->put_string ( "\t\t<line>\n" );
+    }
+    else if ( value.empty() == false )
+    {
+        out->put_string ( "\t\t\t<item value=\"" );
+        out->put_string ( value );
+        out->put_string ( "\" />\n" );
+    }
+
+    return;
+}
+
+void main_window::close_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out )
+{
+    out->put_string ( "\n\t\t</line>\n" );
+    out->put_string ( "\t</group>\n" );
 
     return;
 }
