@@ -7,7 +7,7 @@ main_window::main_window()
     set_default_size ( 1920, 1080 );
 
     signal_show().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_window_show ) ) );
-    signal_hide().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_window_hide ) ) );
+    signal_destroy().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_window_exit ) ) );
 
     return;
 }
@@ -116,8 +116,9 @@ void main_window::on_window_show()
     return;
 }
 
-void main_window::on_window_hide()
+void main_window::on_window_exit()
 {
+std::cout << "exit main_window\n";
     if ( barcode_column )
     {
         barcode_column = nullptr;
