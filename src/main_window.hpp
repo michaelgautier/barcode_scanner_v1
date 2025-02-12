@@ -13,6 +13,9 @@ class main_window : public Gtk::ApplicationWindow {
     public:
         main_window();
     private:
+        void on_window_show();
+        void on_window_hide();
+
         //Header
         Glib::RefPtr<Gio::Menu> main_menu;
 

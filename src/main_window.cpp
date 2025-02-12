@@ -6,6 +6,14 @@ main_window::main_window()
     set_title ( "Gautier Scanner v01" );
     set_default_size ( 1920, 1080 );
 
+    signal_show().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_window_show ) ) );
+    signal_hide().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_window_hide ) ) );
+
+    return;
+}
+
+void main_window::on_window_show()
+{
     /*Menu*/
     HeaderActions = Gio::SimpleActionGroup::create();
 
@@ -104,6 +112,58 @@ main_window::main_window()
     scan_erase_all_button.signal_clicked().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_erase_all_clicked ) ) );
 
     set_focus ( barcode_field );
+
+    return;
+}
+
+void main_window::on_window_hide()
+{
+    if ( barcode_column )
+    {
+        barcode_column = nullptr;
+    }
+
+    if ( barcode_row )
+    {
+        barcode_row = nullptr;
+    }
+
+    if ( barcode_list )
+    {
+    	barcode_list->remove_all();
+        barcode_list = nullptr;
+    }
+
+    if ( HeaderActions )
+    {
+        HeaderActions = nullptr;
+    }
+
+    if ( main_menu )
+    {
+    	main_menu->remove_all();
+        main_menu = nullptr;
+    }
+
+    if ( FileOpenOperationDialog )
+    {
+        FileOpenOperationDialog = nullptr;
+    }
+
+    if ( FileSaveOperationDialog )
+    {
+        FileSaveOperationDialog = nullptr;
+    }
+
+    if ( barcode_list_signal_factory )
+    {
+        barcode_list_signal_factory = nullptr;
+    }
+
+    if ( scan_config_win )
+    {
+        scan_config_win = nullptr;
+    }
 
     return;
 }
