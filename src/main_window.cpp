@@ -10,10 +10,12 @@ main_window::main_window()
     HeaderActions = Gio::SimpleActionGroup::create();
 
     HeaderActions->add_action ( "configure", sigc::mem_fun ( *this, &main_window::on_configure ) );
+    HeaderActions->add_action ( "import", sigc::mem_fun ( *this, &main_window::on_import ) );
     HeaderActions->add_action ( "export", sigc::mem_fun ( *this, &main_window::on_export ) );
 
     main_menu = Gio::Menu::create();
     main_menu->append ( "Configure", "win.configure" );
+    main_menu->append ( "Import", "win.import" );
     main_menu->append ( "Export", "win.export" );
     main_menu->freeze ( );
 
@@ -187,9 +189,8 @@ void main_window::on_barcode_activate()
             {
                 container_count++;
 
-                Glib::ustring LabelPrefix;
-                Glib::ustring LabelMidValue;
-                Glib::ustring LabelSuffix;
+                Glib::ustring LabelPrefix = scan_config_data.get_scan_config_container_prefix();
+                Glib::ustring LabelSuffix = scan_config_data.get_scan_config_container_suffix();
                 Glib::ustring AutoIncrementText;
 
                 if ( scan_config_data.get_scan_config_container_autoincrement() )
@@ -197,7 +198,7 @@ void main_window::on_barcode_activate()
                     AutoIncrementText = Glib::ustring::format ( container_count );
                 }
 
-                Gtk::Label* Description = Gtk::make_managed<Gtk::Label> ( Glib::ustring::format ( LabelPrefix, LabelMidValue, AutoIncrementText, LabelSuffix ) );
+                Gtk::Label* Description = Gtk::make_managed<Gtk::Label> ( Glib::ustring::format ( LabelPrefix, " ", AutoIncrementText, " ", LabelSuffix ) );
                 scanned_barcodes.append ( *Description );
 
                 for ( guint i = 0; i < barcode_count; i++ )
@@ -224,6 +225,74 @@ void main_window::on_barcode_activate()
     return;
 }
 
+void main_window::on_import()
+{
+    Glib::RefPtr<Gtk::FileFilter> AllowedFileType = Gtk::FileFilter::create();
+    AllowedFileType->add_suffix ( "txt" );
+
+    FileOpenOperationDialog = Gtk::FileChooserNative::create ( "File Import", Gtk::FileChooser::Action::OPEN );
+    FileOpenOperationDialog->set_current_folder ( Gio::File::create_for_path ( Glib::get_home_dir () ) );
+    FileOpenOperationDialog->signal_response().connect ( sigc::mem_fun ( *this, &main_window::file_open_response ) );
+    FileOpenOperationDialog->set_create_folders ( false );
+    FileOpenOperationDialog->set_select_multiple ( false );
+    FileOpenOperationDialog->set_filter ( AllowedFileType );
+    FileOpenOperationDialog->set_modal ( true );
+    FileOpenOperationDialog->set_transient_for ( *this );
+    FileOpenOperationDialog->show();
+
+    return;
+}
+
+void main_window::file_open_response ( int response_id )
+{
+    if ( response_id == Gtk::ResponseType::ACCEPT )
+    {
+        Glib::RefPtr<Gio::File> file_ref = FileOpenOperationDialog->get_file();
+
+        if ( file_ref->query_exists() )
+        {
+            std::cout << "Values input file path " << file_ref->get_path() << "\n";
+
+            Glib::RefPtr<Gio::FileInputStream> file_io_ref = file_ref->read();
+            Glib::RefPtr<Gio::DataInputStream> file_lines_ref = Gio::DataInputStream::create ( file_io_ref );
+
+            bool reading_lines = true;
+            std::string line_data;
+
+            while ( reading_lines )
+            {
+                reading_lines = file_lines_ref->read_line ( line_data );
+
+                if ( line_data.empty() == false )
+                {
+                    barcode_field.set_text ( line_data );
+                    on_barcode_activate();
+
+                    line_data.clear();
+                }
+            }
+
+            if ( file_io_ref->is_closed() == false )
+            {
+                file_io_ref->close();
+                file_io_ref = nullptr;
+            }
+        }
+    }
+    else if ( response_id == Gtk::ResponseType::CANCEL )
+    {
+        std::cout << "Cancelled file import\n";
+    }
+    else if ( response_id == Gtk::ResponseType::DELETE_EVENT )
+    {
+        std::cout << "Abrupt file import dialog closure\n";
+    }
+
+    FileOpenOperationDialog = nullptr;
+
+    return;
+}
+
 void main_window::on_export()
 {
     FileSaveOperationDialog = Gtk::FileChooserNative::create ( "File Export", Gtk::FileChooser::Action::SELECT_FOLDER );
@@ -241,16 +310,88 @@ void main_window::file_save_response ( int response_id )
 {
     if ( response_id == Gtk::ResponseType::ACCEPT )
     {
-        Glib::RefPtr<Gio::File> folder_path = FileSaveOperationDialog->get_current_folder();
-        std::cout << "folder path " << folder_path->get_path() << "\n";
+        Glib::RefPtr<Gio::File> folder_ref = FileSaveOperationDialog->get_current_folder();
+
+        std::string directory_path = folder_ref->get_path();
+
+        std::cout << "exporting to folder path " << directory_path << "\n";
+
+        std::string file_name;
+
+        switch ( scan_config_data.get_scan_config_export_format_type() )
+        {
+            case scan_config_export_type::tab_delimited:
+                file_name = "export.tsv";
+                break;
+
+            case scan_config_export_type::xml:
+                file_name = "export.xml";
+                break;
+
+            case scan_config_export_type::edi_856:
+                file_name = "export.edi856";
+                break;
+
+            default:
+                file_name = "export.txt";
+                break;
+        }
+
+        std::string file_path = Glib::build_filename ( directory_path, file_name );
+
+        Glib::RefPtr<Gio::File> file_ref = Gio::File::create_for_path ( file_path );
+
+        Glib::RefPtr<Gio::FileOutputStream> file_io_ref;
+
+        std::cout << "Values output file path " << file_ref->get_path() << "\n";
+
+        if ( file_ref->query_exists() )
+        {
+            file_io_ref = file_ref->replace ( "", true, Gio::File::CreateFlags::REPLACE_DESTINATION );
+        }
+        else
+        {
+            file_io_ref = file_ref->create_file ( Gio::File::CreateFlags::PRIVATE );
+        }
+
+        Glib::RefPtr<Gio::DataOutputStream> file_lines_ref = Gio::DataOutputStream::create ( file_io_ref );
+
+        int row_num = 0;
+        Gtk::ListBoxRow* container_row = scanned_barcodes.get_row_at_index ( row_num++ );
+
+        std::string row_label_text;
+
+        while ( container_row )
+        {
+            Gtk::Label* row_label = dynamic_cast<Gtk::Label*> ( container_row->get_child() );
+
+            if ( row_label )
+            {
+                row_label_text = row_label->get_text();
+
+                file_lines_ref->put_string ( row_label_text + "\n" );
+
+                row_label_text.clear();
+            }
+
+            container_row = scanned_barcodes.get_row_at_index ( row_num++ );
+        }
+
+        file_io_ref->flush();
+
+        if ( file_io_ref->is_closed() == false )
+        {
+            file_io_ref->close();
+            file_io_ref = nullptr;
+        }
     }
     else if ( response_id == Gtk::ResponseType::CANCEL )
     {
-        std::cout << "CANCEL\n";
+        std::cout << "Cancelled file export\n";
     }
     else if ( response_id == Gtk::ResponseType::DELETE_EVENT )
     {
-        std::cout << "DELETE_EVENT\n";
+        std::cout << "Abrupt file export dialog closure\n";
     }
 
     FileSaveOperationDialog = nullptr;

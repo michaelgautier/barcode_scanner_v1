@@ -23,6 +23,7 @@ class main_window : public Gtk::ApplicationWindow {
         //Header Menu Actions
         Glib::RefPtr<Gio::SimpleActionGroup> HeaderActions;
 
+        void on_import();
         void on_export();
         void on_configure();
         void on_reset_clicked();
@@ -66,6 +67,8 @@ class main_window : public Gtk::ApplicationWindow {
 
         scan_config_record scan_config_data;
         Glib::RefPtr<Gtk::FileChooserNative> FileSaveOperationDialog;
+        Glib::RefPtr<Gtk::FileChooserNative> FileOpenOperationDialog;
         void file_save_response ( int response_id );
+        void file_open_response ( int response_id );
 };
 #endif
