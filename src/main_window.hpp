@@ -73,5 +73,11 @@ class main_window : public Gtk::ApplicationWindow {
         Glib::RefPtr<Gtk::FileChooserNative> FileOpenOperationDialog;
         void file_save_response ( int response_id );
         void file_open_response ( int response_id );
+
+        //File Export
+        void write_tab_delimited_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
+        void write_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
+        void write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
+        void write_text_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
 };
 #endif

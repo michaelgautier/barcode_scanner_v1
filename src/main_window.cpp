@@ -118,7 +118,6 @@ void main_window::on_window_show()
 
 void main_window::on_window_exit()
 {
-std::cout << "exit main_window\n";
     if ( barcode_column )
     {
         barcode_column = nullptr;
@@ -131,7 +130,7 @@ std::cout << "exit main_window\n";
 
     if ( barcode_list )
     {
-    	barcode_list->remove_all();
+        barcode_list->remove_all();
         barcode_list = nullptr;
     }
 
@@ -142,7 +141,7 @@ std::cout << "exit main_window\n";
 
     if ( main_menu )
     {
-    	main_menu->remove_all();
+        main_menu->remove_all();
         main_menu = nullptr;
     }
 
@@ -421,6 +420,7 @@ void main_window::file_save_response ( int response_id )
         Gtk::ListBoxRow* container_row = scanned_barcodes.get_row_at_index ( row_num++ );
 
         std::string row_label_text;
+        std::string container_name;
 
         while ( container_row )
         {
@@ -430,7 +430,38 @@ void main_window::file_save_response ( int response_id )
             {
                 row_label_text = row_label->get_text();
 
-                file_lines_ref->put_string ( row_label_text + "\n" );
+                bool has_prefix = Glib::str_has_prefix ( row_label_text, scan_config_data.get_scan_config_container_prefix() );
+                bool has_suffix = Glib::str_has_prefix ( row_label_text, scan_config_data.get_scan_config_container_suffix() );
+
+                if ( has_prefix || has_suffix )
+                {
+                    if ( container_name.empty() == false )
+                    {
+                        file_lines_ref->put_string ( "\n" );
+                    }
+
+                    container_name = row_label_text;
+                    row_label_text.clear();
+                }
+
+                switch ( scan_config_data.get_scan_config_export_format_type() )
+                {
+                    case scan_config_export_type::tab_delimited:
+                        write_tab_delimited_line ( file_lines_ref, container_name, row_label_text );
+                        break;
+
+                    case scan_config_export_type::xml:
+                        write_xml_line ( file_lines_ref, container_name, row_label_text );
+                        break;
+
+                    case scan_config_export_type::edi_856:
+                        write_edi_856_line ( file_lines_ref, container_name, row_label_text );
+                        break;
+
+                    default:
+                        write_text_line ( file_lines_ref, container_name, row_label_text );
+                        break;
+                }
 
                 row_label_text.clear();
             }
@@ -456,6 +487,41 @@ void main_window::file_save_response ( int response_id )
     }
 
     FileSaveOperationDialog = nullptr;
+
+    return;
+}
+
+void main_window::write_tab_delimited_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value )
+{
+    if ( value.empty() && container_name.empty() == false )
+    {
+        out->put_string ( container_name );
+    }
+    else if ( value.empty() == false )
+    {
+        out->put_string ( "\t" + value );
+    }
+
+    return;
+}
+
+void main_window::write_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value )
+{
+    out->put_string ( value + "\n" );
+
+    return;
+}
+
+void main_window::write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value )
+{
+    out->put_string ( value + "\n" );
+
+    return;
+}
+
+void main_window::write_text_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value )
+{
+    out->put_string ( value + "\n" );
 
     return;
 }
