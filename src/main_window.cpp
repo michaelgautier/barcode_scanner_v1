@@ -1,5 +1,6 @@
 #include "main_window.hpp"
 #include <iostream>
+#include <ctime>
 
 main_window::main_window()
 {
@@ -417,6 +418,7 @@ void main_window::file_save_response ( int response_id )
         Glib::RefPtr<Gio::DataOutputStream> file_lines_ref = Gio::DataOutputStream::create ( file_io_ref );
 
         int row_num = 0;
+        int total_items = 0;
         Gtk::ListBoxRow* container_row = scanned_barcodes.get_row_at_index ( row_num++ );
 
         std::string row_label_text;
@@ -428,6 +430,21 @@ void main_window::file_save_response ( int response_id )
         {
             file_lines_ref->put_string ( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
             file_lines_ref->put_string ( "<document>\n" );
+        }
+        else if ( export_type == scan_config_export_type::edi_856 )
+        {
+            const std::time_t ctime = std::time ( nullptr );
+            std::tm* ctime_v = std::localtime ( &ctime );
+
+            Glib::ustring date_text = Glib::ustring::format ( ctime_v->tm_year, ctime_v->tm_mon, ctime_v->tm_mday );
+            Glib::ustring time_text = Glib::ustring::format ( ctime_v->tm_hour, ctime_v->tm_min );
+
+            file_lines_ref->put_string ( "ISA*00**00**ZZ*GAUTIER*99*WORLDWIDE*8738473*1050*U*00401*23847988*0*P*>~\n" );
+            file_lines_ref->put_string ( "GS*SH*GAUTIER*WORLDWIDE*" + date_text + "*1050*23847988*X*004010~\n" );
+            file_lines_ref->put_string ( "ST*856*" + time_text + "~\n" );
+            file_lines_ref->put_string ( "BSN*00*SHIPMENTNUMBER*" + date_text + "*HHMM~\n" );
+            file_lines_ref->put_string ( "DTM*002*" + date_text + "~\n" );
+            file_lines_ref->put_string ( "HL*1**S~\n" );
         }
         else
         {
@@ -443,7 +460,7 @@ void main_window::file_save_response ( int response_id )
                 row_label_text = row_label->get_text();
 
                 bool has_prefix = Glib::str_has_prefix ( row_label_text, scan_config_data.get_scan_config_container_prefix() );
-                bool has_suffix = Glib::str_has_prefix ( row_label_text, scan_config_data.get_scan_config_container_suffix() );
+                bool has_suffix = Glib::str_has_suffix ( row_label_text, scan_config_data.get_scan_config_container_suffix() );
                 bool close_line = false;
 
                 if ( has_prefix || has_suffix )
@@ -455,6 +472,10 @@ void main_window::file_save_response ( int response_id )
 
                     container_name = row_label_text;
                     row_label_text.clear();
+                }
+                else
+                {
+                    total_items++;
                 }
 
                 switch ( export_type )
@@ -478,12 +499,7 @@ void main_window::file_save_response ( int response_id )
                         break;
 
                     case scan_config_export_type::edi_856:
-                        if ( close_line )
-                        {
-                            file_lines_ref->put_string ( "\n" );
-                        }
-
-                        write_edi_856_line ( file_lines_ref, container_name, row_label_text );
+                        write_edi_856_line ( file_lines_ref, total_items, scan_config_data.get_scan_config_container_suffix(), row_label_text );
                         break;
 
                     default:
@@ -492,7 +508,7 @@ void main_window::file_save_response ( int response_id )
                             file_lines_ref->put_string ( "\n" );
                         }
 
-                        write_text_line ( file_lines_ref, container_name, row_label_text );
+                        write_text_line ( file_lines_ref, row_label_text );
                         break;
                 }
 
@@ -507,6 +523,14 @@ void main_window::file_save_response ( int response_id )
             file_lines_ref->put_string ( "\n\t\t</line>\n" );
             file_lines_ref->put_string ( "\t</group>\n" );
             file_lines_ref->put_string ( "</document>" );
+        }
+        else if ( export_type == scan_config_export_type::edi_856 )
+        {
+
+            file_lines_ref->put_string ( Glib::ustring::format ( "CTT*1*", total_items, "~\n" ) );
+            file_lines_ref->put_string ( Glib::ustring::format ( "SE*1*", row_num, "~\n" ) );
+            file_lines_ref->put_string ( "GE*1*23847988~\n" );
+            file_lines_ref->put_string ( "IEA*1*23847988~\n" );
         }
         else
         {
@@ -535,7 +559,7 @@ void main_window::file_save_response ( int response_id )
     return;
 }
 
-void main_window::write_tab_delimited_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value )
+void main_window::write_tab_delimited_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string container_name, const std::string value )
 {
     if ( value.empty() && container_name.empty() == false )
     {
@@ -549,7 +573,7 @@ void main_window::write_tab_delimited_line ( Glib::RefPtr<Gio::DataOutputStream>
     return;
 }
 
-void main_window::write_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value )
+void main_window::write_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string container_name, const std::string value )
 {
     if ( value.empty() && container_name.empty() == false )
     {
@@ -576,14 +600,28 @@ void main_window::close_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out )
     return;
 }
 
-void main_window::write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value )
+void main_window::write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, const int line_no, const std::string batch_number, const std::string value )
 {
-    out->put_string ( value + "\n" );
+    if ( value.empty() == false )
+    {
+        std::string line_no_str = Glib::ustring::format ( line_no );
+        std::string line_text;
+
+        const int line_no_ubound = 5;
+        int line_no_left_pad_count = line_no_ubound - line_no_str.size();
+        std::string line_no_pad;
+
+        line_no_pad.append ( line_no_left_pad_count, '0' );
+        line_no_pad.append ( line_no_str );
+
+        out->put_string ( "LIN*" + line_no_pad + "*PN*8-002811*VP*8-002811~\n" );
+        out->put_string ( "SN1*" + line_no_pad + "*1*EA****ITM*" + batch_number + "*SN*" + value + "~\n" );
+    }
 
     return;
 }
 
-void main_window::write_text_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value )
+void main_window::write_text_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string value )
 {
     out->put_string ( value + "\n" );
 

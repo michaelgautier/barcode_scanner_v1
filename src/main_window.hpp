@@ -75,10 +75,10 @@ class main_window : public Gtk::ApplicationWindow {
         void file_open_response ( int response_id );
 
         //File Export
-        void write_tab_delimited_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
-        void write_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
-        void write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
-        void write_text_line ( Glib::RefPtr<Gio::DataOutputStream> out, std::string& container_name, std::string& value );
+        void write_tab_delimited_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string container_name, const std::string value );
+        void write_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string container_name, const std::string value );
+        void write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, const int line_no, const std::string batch_number, const std::string value );
+        void write_text_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string value );
         void close_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out );
 };
 #endif
