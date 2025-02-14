@@ -4,7 +4,7 @@
 
 main_window::main_window()
 {
-    set_title ( "Gautier Scanner v01" );
+    set_title ( Glib::get_prgname() );
     set_default_size ( 1920, 1080 );
 
     signal_show().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_window_show ) ) );
