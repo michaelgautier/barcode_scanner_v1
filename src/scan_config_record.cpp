@@ -7,10 +7,10 @@ scan_config_record::scan_config_record()
 
 scan_config_record::scan_config_record ( const scan_config_record& config )
 {
-    scan_config_unique_barcodes = config.scan_config_unique_barcodes;
+    scan_config_unique_items = config.scan_config_unique_items;
     scan_config_items_per_container = config.scan_config_items_per_container;
-    scan_config_barcode_length_min = config.scan_config_barcode_length_min;
-    scan_config_barcode_length_max = config.scan_config_barcode_length_max;
+    scan_config_item_length_min = config.scan_config_item_length_min;
+    scan_config_item_length_max = config.scan_config_item_length_max;
     scan_config_container_prefix = config.scan_config_container_prefix;
     scan_config_container_suffix = config.scan_config_container_suffix;
     scan_config_container_autoincrement = config.scan_config_container_autoincrement;
@@ -20,9 +20,9 @@ scan_config_record::scan_config_record ( const scan_config_record& config )
     return;
 }
 
-bool scan_config_record::get_scan_config_unique_barcodes()
+bool scan_config_record::get_scan_config_unique_items()
 {
-    return scan_config_unique_barcodes;
+    return scan_config_unique_items;
 }
 
 guint scan_config_record::get_scan_config_items_per_container()
@@ -30,14 +30,14 @@ guint scan_config_record::get_scan_config_items_per_container()
     return scan_config_items_per_container;
 }
 
-guint scan_config_record::get_scan_config_barcode_length_min()
+guint scan_config_record::get_scan_config_item_length_min()
 {
-    return scan_config_barcode_length_min;
+    return scan_config_item_length_min;
 }
 
-guint scan_config_record::get_scan_config_barcode_length_max()
+guint scan_config_record::get_scan_config_item_length_max()
 {
-    return scan_config_barcode_length_max;
+    return scan_config_item_length_max;
 }
 
 Glib::ustring scan_config_record::get_scan_config_container_prefix()
@@ -65,9 +65,9 @@ scan_config_export_type scan_config_record::get_scan_config_export_format_type()
     return scan_config_export_format_type;
 }
 
-void scan_config_record::set_scan_config_unique_barcodes ( bool value )
+void scan_config_record::set_scan_config_unique_items ( bool value )
 {
-    scan_config_unique_barcodes = value;
+    scan_config_unique_items = value;
 
     return;
 }
@@ -79,16 +79,16 @@ void scan_config_record::set_scan_config_items_per_container ( guint value )
     return;
 }
 
-void scan_config_record::set_scan_config_barcode_length_min ( guint value )
+void scan_config_record::set_scan_config_item_length_min ( guint value )
 {
-    scan_config_barcode_length_min = value;
+    scan_config_item_length_min = value;
 
     return;
 }
 
-void scan_config_record::set_scan_config_barcode_length_max ( guint value )
+void scan_config_record::set_scan_config_item_length_max ( guint value )
 {
-    scan_config_barcode_length_max = value;
+    scan_config_item_length_max = value;
 
     return;
 }

@@ -33,36 +33,38 @@ class main_window : public Gtk::ApplicationWindow {
         void on_erase_all_clicked();
 
         //Contains all visuals
-        Gtk::Box main_frame;
-        Gtk::Box left_frame;
+        Gtk::Paned main_frame;
 
-        //Barcode text entry
+        //Item input
+        Gtk::Box pane_left_frame;
         Gtk::Box input_frame; //Contains the input fields
-        Gtk::Label barcode_field_label;
-        Gtk::Entry barcode_field;
+        Gtk::Label item_field_label;
+        Gtk::Entry item_field;
 
-        //Completed Scans
-        guint container_count;
-        Gtk::ScrolledWindow scanned_barcodes_scroller;
-        Gtk::ListBox scanned_barcodes;
-        Gtk::CenterBox scan_options_center_frame;
-        Gtk::Box scan_options_frame;
-        Gtk::Button scan_reset_button;
-        Gtk::Button scan_erase_all_button;
+        //Items In Progress - Listing
+        Gtk::ScrolledWindow items_in_progress_scroller;
+        Gtk::ColumnView items_in_progress;
+        Glib::RefPtr<Gtk::ColumnViewColumn> item_column;
 
-        //Barcode List - Active scan
-        Gtk::ScrolledWindow barcodes_scroller;
-        Gtk::ColumnView barcodes;
-        Glib::RefPtr<Gtk::ColumnViewColumn> barcode_column;
+	//Items In Progress - Buttons
+        Gtk::Box input_actions_layout_frame;
+        Gtk::CenterBox input_actions_frame;
+        Gtk::Button reset_button;
+        Gtk::Button erase_all_button;
 
-        //Barcode List - Data model
-        Glib::RefPtr<Gio::ListStore<barcode_record>> barcode_list;
-        Glib::RefPtr<barcode_record> barcode_row;//Goes into the barcode_list
+        //Item List - Data model
+        Glib::RefPtr<Gio::ListStore<barcode_record>> item_list;
+        Glib::RefPtr<barcode_record> item_row;//Goes into the item_list
+
+        //Packages
+        guint package_count = 0;
+        Gtk::ScrolledWindow packages_scroller;
+        Gtk::ListBox packaged_items;
 
         //Signals
-        Glib::RefPtr<Gtk::SignalListItemFactory> barcode_list_signal_factory;
-        void on_barcode_bind ( const Glib::RefPtr<Gtk::ListItem>& list_item );
-        void on_barcode_activate();
+        Glib::RefPtr<Gtk::SignalListItemFactory> items_in_progress_signal_factory;
+        void on_item_bind ( const Glib::RefPtr<Gtk::ListItem>& list_item );
+        void on_item_activate();
 
         //Scanner Configuration
         scan_config_window* scan_config_win;

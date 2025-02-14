@@ -40,99 +40,99 @@ void main_window::on_window_show()
 
     /*Layout*/
     main_frame.set_orientation ( Gtk::Orientation::HORIZONTAL );
-    main_frame.prepend ( left_frame );
-    main_frame.append ( scanned_barcodes_scroller );
+    main_frame.set_start_child ( pane_left_frame );
+    main_frame.set_end_child ( packages_scroller );
+    main_frame.set_shrink_start_child ( false );
 
     input_frame.set_orientation ( Gtk::Orientation::HORIZONTAL );
-    input_frame.append ( barcode_field_label );
-    input_frame.append ( barcode_field );
+    input_frame.append ( item_field_label );
+    input_frame.append ( item_field );
 
-    left_frame.set_orientation ( Gtk::Orientation::VERTICAL );
-    left_frame.prepend ( input_frame );
-    left_frame.append ( barcodes_scroller );
-    left_frame.append ( scan_options_center_frame );
+    pane_left_frame.set_orientation ( Gtk::Orientation::VERTICAL );
+    pane_left_frame.prepend ( input_frame );
+    pane_left_frame.append ( items_in_progress_scroller );
+    pane_left_frame.append ( input_actions_frame );
 
-    scan_options_center_frame.set_end_widget ( scan_options_frame );
-    scan_options_frame.append ( scan_reset_button );
-    scan_options_frame.append ( scan_erase_all_button );
+    input_actions_frame.set_end_widget ( input_actions_layout_frame );
+    input_actions_layout_frame.append ( reset_button );
+    input_actions_layout_frame.append ( erase_all_button );
 
-    scan_options_frame.set_orientation ( Gtk::Orientation::HORIZONTAL );
-    scan_options_frame.set_spacing ( 8 );
-    scan_reset_button.set_label ( "Reset" );
-    scan_erase_all_button.set_label ( "Erase all" );
+    input_actions_layout_frame.set_orientation ( Gtk::Orientation::HORIZONTAL );
+    input_actions_layout_frame.set_spacing ( 8 );
 
-    scanned_barcodes_scroller.set_child ( scanned_barcodes );
-    scanned_barcodes_scroller.set_size_request ( 1100 );
+    packages_scroller.set_child ( packaged_items );
+    items_in_progress_scroller.set_child ( items_in_progress );
 
-    set_child ( main_frame );
+    /*Styling*/
+    item_field_label.set_margin ( 10 );
+    item_field_label.set_text ( "ITEM" );
 
-    /*Barcode Scanning*/
-    barcode_field_label.set_margin ( 10 );
-    barcode_field_label.set_text ( "barcode" );
+    item_field.set_margin ( 10 );
+    item_field.set_size_request ( 400 );
+    item_field.set_halign ( Gtk::Align::START );
+    item_field.set_valign ( Gtk::Align::CENTER );
+    item_field.set_hexpand ( false );
+    item_field.set_vexpand ( false );
 
-    barcode_field.set_margin ( 10 );
-    barcode_field.set_size_request ( 400 );
-    barcode_field.set_halign ( Gtk::Align::START );
-    barcode_field.set_valign ( Gtk::Align::CENTER );
-    barcode_field.set_hexpand ( false );
-    barcode_field.set_vexpand ( false );
+    items_in_progress.set_halign ( Gtk::Align::FILL );
+    items_in_progress.set_valign ( Gtk::Align::FILL );
+    items_in_progress.set_hexpand ( true );
+    items_in_progress.set_vexpand ( true );
 
-    barcodes_scroller.set_child ( barcodes );
+    packages_scroller.set_size_request ( 1100 );
 
-    barcodes.set_halign ( Gtk::Align::FILL );
-    barcodes.set_valign ( Gtk::Align::FILL );
-    barcodes.set_hexpand ( true );
-    barcodes.set_vexpand ( true );
+    reset_button.set_label ( "Reset" );
+    erase_all_button.set_label ( "Erase all" );
 
-    /*Barcode accumulation storage*/
-    container_count = 0;
+    /*Item column visual data binding*/
+    items_in_progress_signal_factory = Gtk::SignalListItemFactory::create();
+    items_in_progress_signal_factory->signal_setup().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_item_bind ) ) );
+    items_in_progress_signal_factory->signal_bind().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_item_bind ) ) );
 
-    barcode_list = Gio::ListStore<barcode_record>::create();
-
-    /*Bind barcode storage to barcode list visual*/
-    auto barcode_model = Gtk::SingleSelection::create ( barcode_list );
-    barcodes.set_model ( barcode_model );
-
-    /*Barcode column visual data binding*/
-    barcode_list_signal_factory = Gtk::SignalListItemFactory::create();
-    barcode_list_signal_factory->signal_setup().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_barcode_bind ) ) );
-    barcode_list_signal_factory->signal_bind().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_barcode_bind ) ) );
-
-    /*Barcode column visuals*/
-    barcode_column = Gtk::ColumnViewColumn::create ( "Barcodes", barcode_list_signal_factory );
-
-    barcodes.append_column ( barcode_column );
-
-    /*Barcode text entry ENTER key trigger*/
-    barcode_field.signal_activate().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_barcode_activate ) ) );
+    /*Item text entry ENTER key trigger*/
+    item_field.signal_activate().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_item_activate ) ) );
 
     /*Reset button signal*/
-    scan_reset_button.signal_clicked().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_reset_clicked ) ) );
+    reset_button.signal_clicked().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_reset_clicked ) ) );
 
     /*Erase all button signal*/
-    scan_erase_all_button.signal_clicked().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_erase_all_clicked ) ) );
+    erase_all_button.signal_clicked().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_erase_all_clicked ) ) );
 
-    set_focus ( barcode_field );
+    /*This has to occur last so binding occurs correctly.*/
+    /*Items in Progress*/
+    //1.) Need a data list to hold scanned item values.
+    item_list = Gio::ListStore<barcode_record>::create();
+    //2.) Wrap the data list in an interface used by visual list widgets.
+    Glib::RefPtr<Gtk::SingleSelection> item_model = Gtk::SingleSelection::create ( item_list );
+    //3.) Link the data list to the visual list widget.
+    items_in_progress.set_model ( item_model );
+    //4.) Define a view to visualize one or more values from the model.
+    item_column = Gtk::ColumnViewColumn::create ( "ITEMS in progress", items_in_progress_signal_factory );
+    //5.) Link the item(s) visual to the aggregate visual.
+    items_in_progress.append_column ( item_column );
+
+    set_child ( main_frame );
+    set_focus ( item_field );
 
     return;
 }
 
 void main_window::on_window_exit()
 {
-    if ( barcode_column )
+    if ( item_column )
     {
-        barcode_column = nullptr;
+        item_column = nullptr;
     }
 
-    if ( barcode_row )
+    if ( item_row )
     {
-        barcode_row = nullptr;
+        item_row = nullptr;
     }
 
-    if ( barcode_list )
+    if ( item_list )
     {
-        barcode_list->remove_all();
-        barcode_list = nullptr;
+        item_list->remove_all();
+        item_list = nullptr;
     }
 
     if ( HeaderActions )
@@ -156,9 +156,9 @@ void main_window::on_window_exit()
         FileSaveOperationDialog = nullptr;
     }
 
-    if ( barcode_list_signal_factory )
+    if ( items_in_progress_signal_factory )
     {
-        barcode_list_signal_factory = nullptr;
+        items_in_progress_signal_factory = nullptr;
     }
 
     if ( scan_config_win )
@@ -169,7 +169,7 @@ void main_window::on_window_exit()
     return;
 }
 
-void main_window::on_barcode_bind ( const Glib::RefPtr<Gtk::ListItem>& list_item )
+void main_window::on_item_bind ( const Glib::RefPtr<Gtk::ListItem>& list_item )
 {
     auto row = std::dynamic_pointer_cast<barcode_record> ( list_item->get_item() );
 
@@ -197,36 +197,36 @@ void main_window::on_barcode_bind ( const Glib::RefPtr<Gtk::ListItem>& list_item
     return;
 }
 
-void main_window::on_barcode_activate()
+void main_window::on_item_activate()
 {
-    Glib::RefPtr<Gtk::EntryBuffer> barcode_buffer = barcode_field.get_buffer();
+    Glib::RefPtr<Gtk::EntryBuffer> item_buffer = item_field.get_buffer();
 
-    if ( barcode_buffer )
+    if ( item_buffer )
     {
-        const guint text_length = barcode_buffer->get_length();
+        const guint text_length = item_buffer->get_length();
 
-        const guint barcode_length_min = scan_config_data.get_scan_config_barcode_length_min();
-        const guint barcode_length_max = scan_config_data.get_scan_config_barcode_length_max();
+        const guint item_length_min = scan_config_data.get_scan_config_item_length_min();
+        const guint item_length_max = scan_config_data.get_scan_config_item_length_max();
 
-        if ( text_length >= barcode_length_min && text_length <= barcode_length_max )
+        if ( text_length >= item_length_min && text_length <= item_length_max )
         {
-            barcode_row = barcode_record::create ( barcode_buffer->get_text() );
+            item_row = barcode_record::create ( item_buffer->get_text() );
 
             bool found = false;
             bool limit_reached = false;
             const guint limit = scan_config_data.get_scan_config_items_per_container();
 
-            guint barcode_count = barcode_list->get_n_items();
+            guint item_count = item_list->get_n_items();
 
-            const bool unique_scan_required = scan_config_data.get_scan_config_unique_barcodes();
+            const bool unique_scan_required = scan_config_data.get_scan_config_unique_items();
 
-            for ( guint i = 0; i < barcode_count; i++ )
+            for ( guint i = 0; i < item_count; i++ )
             {
-                Glib::RefPtr<barcode_record> row = barcode_list->get_item ( i );
+                Glib::RefPtr<barcode_record> row = item_list->get_item ( i );
 
                 if ( unique_scan_required )
                 {
-                    found = row->value == barcode_row->value;
+                    found = row->value == item_row->value;
 
                     if ( found )
                     {
@@ -237,18 +237,18 @@ void main_window::on_barcode_activate()
 
             if ( !found )
             {
-                barcode_list->append ( barcode_row );
+                item_list->append ( item_row );
 
-                barcode_field.set_text ( "" );
+                item_field.set_text ( "" );
 
-                barcode_count = barcode_list->get_n_items();
+                item_count = item_list->get_n_items();
 
-                limit_reached = limit == barcode_count;
+                limit_reached = limit == item_count;
             }
 
             if ( limit_reached )
             {
-                container_count++;
+                package_count++;
 
                 Glib::ustring LabelPrefix = scan_config_data.get_scan_config_container_prefix();
                 Glib::ustring LabelSuffix = scan_config_data.get_scan_config_container_suffix();
@@ -256,22 +256,22 @@ void main_window::on_barcode_activate()
 
                 if ( scan_config_data.get_scan_config_container_autoincrement() )
                 {
-                    AutoIncrementText = Glib::ustring::format ( container_count );
+                    AutoIncrementText = Glib::ustring::format ( package_count );
                 }
 
                 Gtk::Label* Description = Gtk::make_managed<Gtk::Label> ( Glib::ustring::format ( LabelPrefix, " ", AutoIncrementText, " ", LabelSuffix ) );
-                scanned_barcodes.append ( *Description );
+                packaged_items.append ( *Description );
 
-                for ( guint i = 0; i < barcode_count; i++ )
+                for ( guint i = 0; i < item_count; i++ )
                 {
-                    Glib::RefPtr<barcode_record> row = barcode_list->get_item ( i );
+                    Glib::RefPtr<barcode_record> row = item_list->get_item ( i );
 
                     Description = Gtk::make_managed<Gtk::Label> ( row->value );
 
-                    scanned_barcodes.append ( *Description );
+                    packaged_items.append ( *Description );
                 }
 
-                barcode_list->remove_all();
+                item_list->remove_all();
 
                 if ( scan_config_data.get_scan_config_container_autoprint() )
                 {
@@ -280,7 +280,7 @@ void main_window::on_barcode_activate()
             }
         }
 
-        barcode_field.grab_focus();
+        item_field.grab_focus();
     }
 
     return;
@@ -326,8 +326,8 @@ void main_window::file_open_response ( int response_id )
 
                 if ( line_data.empty() == false )
                 {
-                    barcode_field.set_text ( line_data );
-                    on_barcode_activate();
+                    item_field.set_text ( line_data );
+                    on_item_activate();
 
                     line_data.clear();
                 }
@@ -419,7 +419,7 @@ void main_window::file_save_response ( int response_id )
 
         int row_num = 0;
         int total_items = 0;
-        Gtk::ListBoxRow* container_row = scanned_barcodes.get_row_at_index ( row_num++ );
+        Gtk::ListBoxRow* container_row = packaged_items.get_row_at_index ( row_num++ );
 
         std::string row_label_text;
         std::string container_name;
@@ -515,7 +515,7 @@ void main_window::file_save_response ( int response_id )
                 row_label_text.clear();
             }
 
-            container_row = scanned_barcodes.get_row_at_index ( row_num++ );
+            container_row = packaged_items.get_row_at_index ( row_num++ );
         }
 
         if ( container_name.empty() == false && export_type == scan_config_export_type::xml )
@@ -653,8 +653,8 @@ void main_window::scan_config_on_close()
 
 void main_window::on_reset_clicked()
 {
-    barcode_field.set_text ( "" );
-    set_focus ( barcode_field );
+    item_field.set_text ( "" );
+    set_focus ( item_field );
 
     return;
 }
@@ -662,7 +662,7 @@ void main_window::on_reset_clicked()
 void main_window::on_erase_all_clicked()
 {
     on_reset_clicked();
-    barcode_list->remove_all();
+    item_list->remove_all();
 
     return;
 }
