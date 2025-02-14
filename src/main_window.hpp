@@ -26,12 +26,6 @@ class main_window : public Gtk::ApplicationWindow {
         //Header Menu Actions
         Glib::RefPtr<Gio::SimpleActionGroup> HeaderActions;
 
-        void on_import();
-        void on_export();
-        void on_configure();
-        void on_reset_clicked();
-        void on_erase_all_clicked();
-
         //Contains all visuals
         Gtk::Paned main_frame;
 
@@ -46,11 +40,14 @@ class main_window : public Gtk::ApplicationWindow {
         Gtk::ColumnView items_in_progress;
         Glib::RefPtr<Gtk::ColumnViewColumn> item_column;
 
-	//Items In Progress - Buttons
+        //Items In Progress - Buttons
         Gtk::Box input_actions_layout_frame;
         Gtk::CenterBox input_actions_frame;
         Gtk::Button reset_button;
         Gtk::Button erase_all_button;
+
+        void on_reset_clicked();
+        void on_erase_all_clicked();
 
         //Item List - Data model
         Glib::RefPtr<Gio::ListStore<barcode_record>> item_list;
@@ -68,15 +65,23 @@ class main_window : public Gtk::ApplicationWindow {
 
         //Scanner Configuration
         scan_config_window* scan_config_win;
+        scan_config_record scan_config_data;
+
+        void on_configure();
         void scan_config_on_close();
 
-        scan_config_record scan_config_data;
-        Glib::RefPtr<Gtk::FileChooserNative> FileSaveOperationDialog;
+        //File Import
         Glib::RefPtr<Gtk::FileChooserNative> FileOpenOperationDialog;
-        void file_save_response ( int response_id );
+
+        void on_import();
         void file_open_response ( int response_id );
 
         //File Export
+        Glib::RefPtr<Gtk::FileChooserNative> FileSaveOperationDialog;
+
+        void on_export();
+        void file_save_response ( int response_id );
+
         void write_tab_delimited_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string container_name, const std::string value );
         void write_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string container_name, const std::string value );
         void write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, const int line_no, const std::string batch_number, const std::string value );
