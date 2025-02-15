@@ -5,7 +5,8 @@
 main_window::main_window()
 {
     set_title ( Glib::get_prgname() );
-    set_default_size ( 1920, 1080 );
+    set_default_size ( 800, 640 );
+    set_decorated ( true );
 
     signal_show().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_window_show ) ) );
     signal_destroy().connect ( sigc::bind ( sigc::mem_fun ( *this, &main_window::on_window_exit ) ) );
@@ -43,6 +44,9 @@ void main_window::on_window_show()
     main_frame.set_start_child ( pane_left_frame );
     main_frame.set_end_child ( packages_scroller );
     main_frame.set_shrink_start_child ( false );
+    main_frame.set_resize_start_child ( false );
+    main_frame.set_shrink_end_child ( false );
+    main_frame.set_resize_end_child ( true );
 
     input_frame.set_orientation ( Gtk::Orientation::HORIZONTAL );
     input_frame.append ( item_field_label );
@@ -54,11 +58,9 @@ void main_window::on_window_show()
     pane_left_frame.append ( input_actions_frame );
 
     input_actions_frame.set_end_widget ( input_actions_layout_frame );
+    input_actions_layout_frame.set_orientation ( Gtk::Orientation::HORIZONTAL );
     input_actions_layout_frame.append ( reset_button );
     input_actions_layout_frame.append ( erase_all_button );
-
-    input_actions_layout_frame.set_orientation ( Gtk::Orientation::HORIZONTAL );
-    input_actions_layout_frame.set_spacing ( 8 );
 
     packages_scroller.set_child ( packaged_items );
     items_in_progress_scroller.set_child ( items_in_progress );
@@ -68,7 +70,7 @@ void main_window::on_window_show()
     item_field_label.set_text ( "ITEM" );
 
     item_field.set_margin ( 10 );
-    item_field.set_size_request ( 400 );
+    item_field.set_size_request ( 250 );
     item_field.set_halign ( Gtk::Align::START );
     item_field.set_valign ( Gtk::Align::CENTER );
     item_field.set_hexpand ( false );
@@ -79,10 +81,17 @@ void main_window::on_window_show()
     items_in_progress.set_hexpand ( true );
     items_in_progress.set_vexpand ( true );
 
-    packages_scroller.set_size_request ( 1100 );
+    input_actions_layout_frame.set_spacing ( 8 );
+
+    packages_scroller.set_size_request ( 400 );
 
     reset_button.set_label ( "Reset" );
+    reset_button.set_margin ( 8 );
+
     erase_all_button.set_label ( "Erase all" );
+    erase_all_button.set_margin ( 8 );
+    
+    main_frame.set_position(item_field.get_width() + 300);
 
     /*Item column visual data binding*/
     items_in_progress_signal_factory = Gtk::SignalListItemFactory::create();
@@ -645,6 +654,8 @@ void main_window::on_configure()
 void main_window::scan_config_on_close()
 {
     scan_config_data = scan_config_win->get_config();
+
+    item_field.set_max_length ( scan_config_data.get_scan_config_item_length_max() );
 
     delete scan_config_win;
 
