@@ -55,6 +55,7 @@ class main_window : public Gtk::ApplicationWindow {
 
         //Packages
         guint package_count = 0;
+        guint package_item_count = 0;
         Gtk::ScrolledWindow packages_scroller;
         Gtk::ListBox packaged_items;
 
@@ -84,7 +85,7 @@ class main_window : public Gtk::ApplicationWindow {
 
         void write_tab_delimited_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string container_name, const std::string value );
         void write_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string container_name, const std::string value );
-        void write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, const int line_no, const std::string batch_number, const std::string value );
+        int write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, const int line_no, const std::string batch_number, const std::string value );
         void write_text_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string value );
         void close_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out );
 };

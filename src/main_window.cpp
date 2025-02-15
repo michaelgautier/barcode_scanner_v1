@@ -80,18 +80,25 @@ void main_window::on_window_show()
     items_in_progress.set_valign ( Gtk::Align::FILL );
     items_in_progress.set_hexpand ( true );
     items_in_progress.set_vexpand ( true );
+    items_in_progress.set_margin ( 8 );
 
     input_actions_layout_frame.set_spacing ( 8 );
 
     packages_scroller.set_size_request ( 400 );
+    packages_scroller.set_margin ( 8 );//Shortcut, set all margin sides
+    packages_scroller.set_margin_bottom ( 60 );//Then override the bottom
 
     reset_button.set_label ( "Reset" );
     reset_button.set_margin ( 8 );
 
     erase_all_button.set_label ( "Erase all" );
     erase_all_button.set_margin ( 8 );
-    
-    main_frame.set_position(item_field.get_width() + 300);
+
+    main_frame.set_position ( item_field.get_width() + 300 );
+
+    /*Tooltips*/
+    item_field_label.set_tooltip_text ( "Scan a barcode label\n Type item\n press ENTER" );
+    input_actions_frame.set_tooltip_text ( "Reset clears out the ITEM field.\nErase clears all in-progress items." );
 
     /*Item column visual data binding*/
     items_in_progress_signal_factory = Gtk::SignalListItemFactory::create();
@@ -268,19 +275,28 @@ void main_window::on_item_activate()
                     AutoIncrementText = Glib::ustring::format ( package_count );
                 }
 
-                Gtk::Label* Description = Gtk::make_managed<Gtk::Label> ( Glib::ustring::format ( LabelPrefix, " ", AutoIncrementText, " ", LabelSuffix ) );
-                packaged_items.append ( *Description );
+                Glib::ustring container_name = Glib::ustring::format ( LabelPrefix, " ", AutoIncrementText, " ", LabelSuffix );
+
+                Gtk::Label* item_description = Gtk::make_managed<Gtk::Label> ( container_name );
+                packaged_items.append ( *item_description );
 
                 for ( guint i = 0; i < item_count; i++ )
                 {
                     Glib::RefPtr<barcode_record> row = item_list->get_item ( i );
 
-                    Description = Gtk::make_managed<Gtk::Label> ( row->value );
+                    item_description = Gtk::make_managed<Gtk::Label> ( row->value );
 
-                    packaged_items.append ( *Description );
+                    packaged_items.append ( *item_description );
                 }
 
                 item_list->remove_all();
+
+                package_item_count += item_count;
+
+                if ( package_item_count > 28 )
+                {
+                    packaged_items.set_tooltip_text ( Glib::ustring::format ( "Latest container: ", container_name, "\n Total packages: ", package_count, "\n Total items: ", package_item_count ) );
+                }
 
                 if ( scan_config_data.get_scan_config_container_autoprint() )
                 {
@@ -365,13 +381,16 @@ void main_window::file_open_response ( int response_id )
 
 void main_window::on_export()
 {
-    FileSaveOperationDialog = Gtk::FileChooserNative::create ( "File Export", Gtk::FileChooser::Action::SELECT_FOLDER );
-    FileSaveOperationDialog->set_current_folder ( Gio::File::create_for_path ( Glib::get_home_dir () ) );
-    FileSaveOperationDialog->signal_response().connect ( sigc::mem_fun ( *this, &main_window::file_save_response ) );
-    FileSaveOperationDialog->set_create_folders ( true );
-    FileSaveOperationDialog->set_modal ( true );
-    FileSaveOperationDialog->set_transient_for ( *this );
-    FileSaveOperationDialog->show();
+    if ( package_count > 0 && package_item_count > 0 )
+    {
+        FileSaveOperationDialog = Gtk::FileChooserNative::create ( "File Export", Gtk::FileChooser::Action::SELECT_FOLDER );
+        FileSaveOperationDialog->set_current_folder ( Gio::File::create_for_path ( Glib::get_home_dir () ) );
+        FileSaveOperationDialog->signal_response().connect ( sigc::mem_fun ( *this, &main_window::file_save_response ) );
+        FileSaveOperationDialog->set_create_folders ( true );
+        FileSaveOperationDialog->set_modal ( true );
+        FileSaveOperationDialog->set_transient_for ( *this );
+        FileSaveOperationDialog->show();
+    }
 
     return;
 }
@@ -428,6 +447,8 @@ void main_window::file_save_response ( int response_id )
 
         int row_num = 0;
         int total_items = 0;
+        int edi856_st_line_count = 0;
+        int edi856_line_item_count = 0;
         Gtk::ListBoxRow* container_row = packaged_items.get_row_at_index ( row_num++ );
 
         std::string row_label_text;
@@ -454,6 +475,8 @@ void main_window::file_save_response ( int response_id )
             file_lines_ref->put_string ( "BSN*00*SHIPMENTNUMBER*" + date_text + "*HHMM~\n" );
             file_lines_ref->put_string ( "DTM*002*" + date_text + "~\n" );
             file_lines_ref->put_string ( "HL*1**S~\n" );
+
+            edi856_st_line_count = 6;
         }
         else
         {
@@ -508,7 +531,11 @@ void main_window::file_save_response ( int response_id )
                         break;
 
                     case scan_config_export_type::edi_856:
-                        write_edi_856_line ( file_lines_ref, total_items, scan_config_data.get_scan_config_container_suffix(), row_label_text );
+                        {
+                            const int written_line_count = write_edi_856_line ( file_lines_ref, total_items, scan_config_data.get_scan_config_container_suffix(), row_label_text );
+                            edi856_line_item_count += written_line_count;
+                            edi856_st_line_count += written_line_count;
+                        }
                         break;
 
                     default:
@@ -535,9 +562,8 @@ void main_window::file_save_response ( int response_id )
         }
         else if ( export_type == scan_config_export_type::edi_856 )
         {
-
-            file_lines_ref->put_string ( Glib::ustring::format ( "CTT*1*", total_items, "~\n" ) );
-            file_lines_ref->put_string ( Glib::ustring::format ( "SE*1*", row_num, "~\n" ) );
+            file_lines_ref->put_string ( Glib::ustring::format ( "CTT*1*", edi856_line_item_count, "~\n" ) );
+            file_lines_ref->put_string ( Glib::ustring::format ( "SE*1*", edi856_st_line_count, "~\n" ) );
             file_lines_ref->put_string ( "GE*1*23847988~\n" );
             file_lines_ref->put_string ( "IEA*1*23847988~\n" );
         }
@@ -609,8 +635,10 @@ void main_window::close_xml_line ( Glib::RefPtr<Gio::DataOutputStream> out )
     return;
 }
 
-void main_window::write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, const int line_no, const std::string batch_number, const std::string value )
+int main_window::write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, const int line_no, const std::string batch_number, const std::string value )
 {
+    int line_count = 0;
+
     if ( value.empty() == false )
     {
         std::string line_no_str = Glib::ustring::format ( line_no );
@@ -625,9 +653,11 @@ void main_window::write_edi_856_line ( Glib::RefPtr<Gio::DataOutputStream> out, 
 
         out->put_string ( "LIN*" + line_no_pad + "*PN*8-002811*VP*8-002811~\n" );
         out->put_string ( "SN1*" + line_no_pad + "*1*EA****ITM*" + batch_number + "*SN*" + value + "~\n" );
+
+        line_count = 2;
     }
 
-    return;
+    return line_count;
 }
 
 void main_window::write_text_line ( Glib::RefPtr<Gio::DataOutputStream> out, const std::string value )
