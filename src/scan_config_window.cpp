@@ -5,42 +5,47 @@ scan_config_window::scan_config_window()
     set_title ( "Scanner Configuration" );
     set_default_size ( 600, 600 );
 
+    signal_show().connect ( sigc::bind ( sigc::mem_fun ( *this, &scan_config_window::on_window_show ) ) );
+    signal_destroy().connect ( sigc::bind ( sigc::mem_fun ( *this, &scan_config_window::on_window_exit ) ) );
+
+    return;
+}
+
+void scan_config_window::on_window_show()
+{
     set_child ( main_frame );
 
-    main_frame.set_orientation ( Gtk::Orientation::VERTICAL );
-    sameness_level_frame.set_orientation ( Gtk::Orientation::VERTICAL );
-    export_format_frame.set_orientation ( Gtk::Orientation::VERTICAL );
+    group_label_sameness_level.set_text ( "Sameness Level" );
+    group_label_group_size.set_text ( "Group Size" );
+    group_label_container_definition.set_text ( "Container Definition" );
+    group_label_export_format.set_text ( "Export Format" );
 
-    main_frame.append ( *Gtk::make_managed<Gtk::Label> ( "Sameness Level" ) );
+    main_frame.append ( group_label_sameness_level );
     main_frame.append ( sameness_level_frame );
-    main_frame.append ( *Gtk::make_managed<Gtk::Label> ( "Group Size" ) );
+    main_frame.append ( group_label_group_size );
     main_frame.append ( items_per_container_frame );
     main_frame.append ( item_code_length_frame );
-    main_frame.append ( *Gtk::make_managed<Gtk::Label> ( "Container Definition" ) );
+    main_frame.append ( group_label_container_definition );
     main_frame.append ( container_prefix_frame );
     main_frame.append ( container_suffix_frame );
     main_frame.append ( autoincrement_frame );
     main_frame.append ( autoprint_label_frame );
-    main_frame.append ( *Gtk::make_managed<Gtk::Label> ( "Export Format" ) );
+    main_frame.append ( group_label_export_format );
     main_frame.append ( export_format_frame );
 
     sameness_level_frame.append ( sameness_freeform );
     sameness_level_frame.append ( sameness_unique );
 
-    items_per_container_frame.set_spacing ( 8 );
     items_per_container_frame.append ( items_per_container_label );
     items_per_container_frame.append ( items_per_container );
 
-    item_code_length_frame.set_spacing ( 8 );
     item_code_length_frame.append ( items_code_length_label );
     item_code_length_frame.append ( items_code_length_min );
     item_code_length_frame.append ( items_code_length_max );
 
-    container_prefix_frame.set_spacing ( 8 );
     container_prefix_frame.append ( container_prefix_label );
     container_prefix_frame.append ( container_prefix );
 
-    container_suffix_frame.set_spacing ( 8 );
     container_suffix_frame.append ( container_suffix_label );
     container_suffix_frame.append ( container_suffix );
 
@@ -57,13 +62,12 @@ scan_config_window::scan_config_window()
     sameness_unique.set_active ( true );
 
     items_per_container_label.set_label ( "Items/container " );
-    items_per_container.set_max_length ( 4 );
 
     items_code_length_label.set_label ( "Item code length" );
     items_code_length_min.set_max_length ( 1 );
     items_code_length_max.set_max_length ( 2 );
 
-    container_prefix_label.set_label ( "Prefix" );
+    container_prefix_label.set_label ( "Prefix " );
     container_prefix.set_max_length ( 32 );
 
     container_suffix_label.set_label ( "Suffix " );
@@ -82,6 +86,44 @@ scan_config_window::scan_config_window()
     edi856_format.set_label ( "EDI 856" );
     edi856_format.set_group ( tab_delimited_format );
 
+    /*Styling*/
+    add_css_class ( "config_background" );
+
+    main_frame.set_orientation ( Gtk::Orientation::VERTICAL );
+    sameness_level_frame.set_orientation ( Gtk::Orientation::VERTICAL );
+    export_format_frame.set_orientation ( Gtk::Orientation::VERTICAL );
+
+    item_code_length_frame.set_spacing ( 8 );
+
+    container_prefix_frame.set_spacing ( 8 );
+    container_suffix_frame.set_spacing ( 8 );
+
+    items_per_container_frame.set_spacing ( 8 );
+    items_per_container.set_max_length ( 4 );
+
+    group_label_sameness_level.add_css_class ( "section_label" );
+    group_label_group_size.add_css_class ( "section_label" );
+    group_label_container_definition.add_css_class ( "section_label" );
+    group_label_export_format.add_css_class ( "section_label" );
+
+    items_per_container_label.add_css_class ( "standard_label" );
+    items_code_length_label.add_css_class ( "standard_label" );
+    container_prefix_label.add_css_class ( "standard_label" );
+    container_suffix_label.add_css_class ( "standard_label" );
+
+    sameness_freeform.add_css_class ( "toggle_button" );
+    sameness_unique.add_css_class ( "toggle_button" );
+
+    tab_delimited_format.add_css_class ( "toggle_button" );
+    xml_format.add_css_class ( "toggle_button" );
+    edi856_format.add_css_class ( "toggle_button" );
+
+    return;
+}
+
+void scan_config_window::on_window_exit()
+{
+    //stub function - consider persisting configuration to file.
     return;
 }
 

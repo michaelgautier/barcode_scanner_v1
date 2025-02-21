@@ -13,6 +13,9 @@ class scan_config_window : public Gtk::Window {
         scan_config_record get_config();
         void set_config ( scan_config_record config );
     private:
+        void on_window_show();
+        void on_window_exit();
+
         scan_config_record configuration;
 
         Gtk::Box main_frame;
@@ -24,6 +27,11 @@ class scan_config_window : public Gtk::Window {
         Gtk::Box autoincrement_frame;
         Gtk::Box autoprint_label_frame;
         Gtk::Box export_format_frame;
+
+        Gtk::Label group_label_sameness_level;
+        Gtk::Label group_label_group_size;
+        Gtk::Label group_label_container_definition;
+        Gtk::Label group_label_export_format;
 
         Gtk::ToggleButton sameness_freeform;
         Gtk::ToggleButton sameness_unique;

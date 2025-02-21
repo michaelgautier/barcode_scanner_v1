@@ -48,6 +48,7 @@ class main_window : public Gtk::ApplicationWindow {
 
         void on_reset_clicked();
         void on_erase_all_clicked();
+        bool switch_erase_all_button_onoff();
 
         //Item List - Data model
         Glib::RefPtr<Gio::ListStore<barcode_record>> item_list;

@@ -32,11 +32,11 @@ class scan_config_record {
 
     private:
         bool scan_config_unique_items = true;
-        guint scan_config_items_per_container = 10;
-        guint scan_config_item_length_min = 5;
-        guint scan_config_item_length_max = 15;
-        Glib::ustring scan_config_container_prefix = "CONTAINER";
-        Glib::ustring scan_config_container_suffix = "OUTBOUND";
+        guint scan_config_items_per_container = 5;
+        guint scan_config_item_length_min = 6;
+        guint scan_config_item_length_max = 13;
+        Glib::ustring scan_config_container_prefix = "CARGO #";
+        Glib::ustring scan_config_container_suffix = "BUILD";
         bool scan_config_container_autoincrement = true;
         bool scan_config_container_autoprint = false;
         scan_config_export_type scan_config_export_format_type = scan_config_export_type::tab_delimited;

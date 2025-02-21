@@ -43,10 +43,6 @@ void main_window::on_window_show()
     main_frame.set_orientation ( Gtk::Orientation::HORIZONTAL );
     main_frame.set_start_child ( pane_left_frame );
     main_frame.set_end_child ( packages_scroller );
-    main_frame.set_shrink_start_child ( false );
-    main_frame.set_resize_start_child ( false );
-    main_frame.set_shrink_end_child ( false );
-    main_frame.set_resize_end_child ( true );
 
     input_frame.set_orientation ( Gtk::Orientation::HORIZONTAL );
     input_frame.append ( item_field_label );
@@ -66,8 +62,23 @@ void main_window::on_window_show()
     items_in_progress_scroller.set_child ( items_in_progress );
 
     /*Styling*/
+    add_css_class ( "app_baselevel" );
+
+    main_menu_button.set_can_focus ( false );
+
+    main_header.set_can_focus ( false );
+
+    main_frame.set_shrink_start_child ( false );
+    main_frame.set_resize_start_child ( false );
+    main_frame.set_shrink_end_child ( false );
+    main_frame.set_resize_end_child ( true );
+    main_frame.set_position ( item_field.get_width() + 300 );
+
     item_field_label.set_margin ( 10 );
-    item_field_label.set_text ( "ITEM" );
+    item_field_label.set_text ( "M G 2025 9-e" );
+    item_field_label.set_focus_on_click ( true );
+    item_field_label.set_focusable ( true );
+    item_field_label.add_css_class ( "scanner_label" );
 
     item_field.set_margin ( 10 );
     item_field.set_size_request ( 250 );
@@ -80,25 +91,37 @@ void main_window::on_window_show()
     items_in_progress.set_valign ( Gtk::Align::FILL );
     items_in_progress.set_hexpand ( true );
     items_in_progress.set_vexpand ( true );
-    items_in_progress.set_margin ( 8 );
+    items_in_progress.set_show_row_separators ( true );
+    items_in_progress.set_enable_rubberband ( true );
+    items_in_progress.set_can_focus ( false );
+
+    items_in_progress_scroller.set_margin ( 8 );
+    items_in_progress_scroller.add_css_class ( "scroller" );
 
     input_actions_layout_frame.set_spacing ( 8 );
 
     packages_scroller.set_size_request ( 400 );
     packages_scroller.set_margin ( 8 );//Shortcut, set all margin sides
     packages_scroller.set_margin_bottom ( 60 );//Then override the bottom
+    packages_scroller.add_css_class ( "scroller" );
+
+    packaged_items.set_can_focus ( false );
+    packaged_items.add_css_class ( "list_view" );
 
     reset_button.set_label ( "Reset" );
     reset_button.set_margin ( 8 );
+    reset_button.set_can_focus ( false );
+    reset_button.add_css_class ( "button_default" );
 
     erase_all_button.set_label ( "Erase all" );
     erase_all_button.set_margin ( 8 );
-
-    main_frame.set_position ( item_field.get_width() + 300 );
+    erase_all_button.set_can_focus ( false );
+    erase_all_button.add_css_class ( "button_default" );
+    switch_erase_all_button_onoff();
 
     /*Tooltips*/
-    item_field_label.set_tooltip_text ( "Scan a barcode label\n Type item\n press ENTER" );
-    input_actions_frame.set_tooltip_text ( "Reset clears out the ITEM field.\nErase clears all in-progress items." );
+    item_field_label.set_tooltip_text ( "INPUT AN ITEM #\n-------\nScan barcode label or type in an item # then press ENTER" );
+    input_actions_frame.set_tooltip_text ( "START OVER\n-------\nRESET clears single item field.\nERASE removes all in-progress items." );
 
     /*Item column visual data binding*/
     items_in_progress_signal_factory = Gtk::SignalListItemFactory::create();
@@ -126,6 +149,10 @@ void main_window::on_window_show()
     item_column = Gtk::ColumnViewColumn::create ( "ITEMS in progress", items_in_progress_signal_factory );
     //5.) Link the item(s) visual to the aggregate visual.
     items_in_progress.append_column ( item_column );
+
+    /*Column has to be styled separately from the other visuals since its creation is delayed until the end.*/
+    item_column->set_expand ( true );
+    item_column->set_resizable ( false );
 
     set_child ( main_frame );
     set_focus ( item_field );
@@ -207,6 +234,7 @@ void main_window::on_item_bind ( const Glib::RefPtr<Gtk::ListItem>& list_item )
             return;
         }
 
+        label->add_css_class ( "list_item" );
         label->set_text ( row->value );
     }
 
@@ -251,7 +279,7 @@ void main_window::on_item_activate()
                 }
             }
 
-            if ( !found )
+            if ( found == false )
             {
                 item_list->append ( item_row );
 
@@ -293,9 +321,10 @@ void main_window::on_item_activate()
 
                 package_item_count += item_count;
 
-                if ( package_item_count > 28 )
+                if ( package_item_count > 23 )
                 {
-                    packaged_items.set_tooltip_text ( Glib::ustring::format ( "Latest container: ", container_name, "\n Total packages: ", package_count, "\n Total items: ", package_item_count ) );
+                    packaged_items.set_tooltip_text ( Glib::ustring::format ( "QUICK LOOK\n-------\n", "Most recent package: ", container_name, "\n Total packages: ", package_count, "\n Total items: ",
+                                                      package_item_count ) );
                 }
 
                 if ( scan_config_data.get_scan_config_container_autoprint() )
@@ -305,6 +334,7 @@ void main_window::on_item_activate()
             }
         }
 
+        switch_erase_all_button_onoff();
         item_field.grab_focus();
     }
 
@@ -705,5 +735,17 @@ void main_window::on_erase_all_clicked()
     on_reset_clicked();
     item_list->remove_all();
 
+    switch_erase_all_button_onoff();
+
     return;
+}
+
+bool main_window::switch_erase_all_button_onoff()
+{
+    const int count = ( item_list ) ? item_list->get_n_items() : 0;
+    const bool has_items = count > 0;
+
+    erase_all_button.set_sensitive ( has_items );
+
+    return erase_all_button.get_sensitive();
 }
